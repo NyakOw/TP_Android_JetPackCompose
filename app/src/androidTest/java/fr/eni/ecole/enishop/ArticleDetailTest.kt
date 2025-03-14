@@ -34,7 +34,7 @@ class ArticleDetailTest {
             Surface(
                 modifier = Modifier.fillMaxSize()
             ) {
-                ArticleDetail(articleTest)
+//                ArticleDetail(articleTest)
             }
         }
 

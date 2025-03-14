@@ -9,6 +9,7 @@ import fr.eni.ecole.enishop.bo.Article
 import fr.eni.ecole.enishop.dao.DaoType
 import fr.eni.ecole.enishop.repository.ArticleRepository
 import fr.eni.ecole.enishop.room.AppDatabase
+import fr.eni.ecole.enishop.service.ArticleApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,14 +24,14 @@ class ArticleDetailViewModel(private val articleRepository: ArticleRepository) :
     private val _checkedFav = MutableStateFlow<Boolean>(false)
     val checkedFav = _checkedFav.asStateFlow()
 
-    fun initArticle(id: Long) {
+    suspend fun initArticle(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val a = articleRepository.getArticle(id, DaoType.ROOM)
             if (a != null)
             _checkedFav.value = true
+            val currentArticle = articleRepository.getArticle(id, daoType = DaoType.NETWORK)
+            _article.value = currentArticle
         }
-        val currentArticle = articleRepository.getArticle(id)
-        _article.value = currentArticle
     }
 
     fun addArticle(){
@@ -57,14 +58,11 @@ class ArticleDetailViewModel(private val articleRepository: ArticleRepository) :
                 modelClass: Class<T>,
                 extras: CreationExtras
             ): T {
-                // Get the Application object from extras
-//                val application = checkNotNull(extras[APPLICATION_KEY])
-                // Create a SavedStateHandle for this ViewModel from extras
-//                val savedStateHandle = extras.createSavedStateHandle()
 
                 val application = checkNotNull(extras[APPLICATION_KEY])
                 return ArticleDetailViewModel(
-                    ArticleRepository(AppDatabase.getInstance(application.applicationContext).articleDao())
+                    ArticleRepository(AppDatabase.getInstance(application.applicationContext).articleDao(),
+                        ArticleApiService.articleApiService)
                 ) as T
             }
         }

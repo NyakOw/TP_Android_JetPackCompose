@@ -46,13 +46,14 @@ import coil.compose.AsyncImage
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import fr.eni.ecole.enishop.bo.Article
 import fr.eni.ecole.enishop.ui.common.EniShopTopBar
+import fr.eni.ecole.enishop.ui.common.LoadingScreen
 import java.util.Date
 
 @Composable
 fun ArticleListScreen(
     modifier: Modifier = Modifier,
     viewModel: ArticleListViewModel = viewModel(factory = ArticleListViewModel.Factory),
-    onClickBehavior : (Long) -> Unit,
+    onClickBehavior: (Long) -> Unit,
     onButtonClickBehavior: () -> Unit,
     navHostController: NavHostController,
     isDarkThemeActivated: Boolean,
@@ -74,29 +75,39 @@ fun ArticleListScreen(
         articles
     }
 
-    Scaffold(
-        topBar = { EniShopTopBar(
-            navController = navHostController,
-            isDarkThemeActivated = isDarkThemeActivated,
-            onDarkThemeToggle =  onDarkThemeToggle
-        ) }
-    ) {
-        Column(modifier = Modifier.padding(it)) {
-            CategoryFilterChip(
-                categories = categories,
-                selectedCategory = selectedCategory,
-                onCategoryChange = {
-                    selectedCategory = it
-                }
-            )
-            ArticleList(articles = selectedArticles, onClickBehavior =  onClickBehavior )
+    val isLoading by viewModel.isLoading.collectAsState()
 
-            Row(
-                modifier = Modifier.fillMaxSize().padding(30.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                ListArticleFloatingActionButton(onButtonClickBehavior = onButtonClickBehavior)
+    Scaffold(
+        topBar = {
+            EniShopTopBar(
+                navController = navHostController,
+                isDarkThemeActivated = isDarkThemeActivated,
+                onDarkThemeToggle = onDarkThemeToggle
+            )
+        }
+    ) {
+        if (isLoading) {
+            LoadingScreen()
+        } else {
+            Column(modifier = Modifier.padding(it)) {
+                CategoryFilterChip(
+                    categories = categories,
+                    selectedCategory = selectedCategory,
+                    onCategoryChange = {
+                        selectedCategory = it
+                    }
+                )
+                ArticleList(articles = selectedArticles, onClickBehavior = onClickBehavior)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(30.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    ListArticleFloatingActionButton(onButtonClickBehavior = onButtonClickBehavior)
+                }
             }
         }
     }
@@ -104,9 +115,9 @@ fun ArticleListScreen(
 
 @Composable
 fun ArticleList(
-    onClickBehavior : (Long) -> Unit,
-    articles: List<Article>)
-{
+    onClickBehavior: (Long) -> Unit,
+    articles: List<Article>
+) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -128,10 +139,10 @@ fun ArticleList(
 fun ArticleItem(
     article: Article,
     modifier: Modifier = Modifier,
-    onClickBehavior : (Long) -> Unit
+    onClickBehavior: (Long) -> Unit
 ) {
     Card(
-        modifier =  Modifier.clickable {
+        modifier = Modifier.clickable {
             onClickBehavior(article.id)
         }
     ) {
@@ -194,7 +205,7 @@ fun CategoryFilterChip(
 @Composable
 fun ListArticleFloatingActionButton(
     onButtonClickBehavior: () -> Unit
-){
+) {
     FloatingActionButton(
         onClick = { onButtonClickBehavior() },
         shape = CircleShape
